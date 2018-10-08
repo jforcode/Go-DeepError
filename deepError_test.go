@@ -1,4 +1,4 @@
-package deepErr
+package deepError
 
 import (
 	"fmt"
