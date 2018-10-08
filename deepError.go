@@ -11,6 +11,14 @@ type DeepErr struct {
 	Params   []interface{}
 }
 
+func New(function, action string, cause error) DeepErr {
+	return DeepErr{
+		Function: function,
+		Action:   action,
+		Cause:    cause,
+	}
+}
+
 func (err DeepErr) Error() string {
 	ret := ""
 	if err.Function != "" {
