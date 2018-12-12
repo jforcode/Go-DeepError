@@ -2,6 +2,10 @@ package deepError
 
 import "fmt"
 
+// BuildVersion is the build version of the entire project
+var BuildVersion string = "2.0"
+
+// DeepErr is the actual error struct to be used
 type DeepErr struct {
 	Function string
 	Action   string
@@ -11,6 +15,7 @@ type DeepErr struct {
 	Params   []interface{}
 }
 
+// New is a basic function which gives info on the error. In Which function, doing what action, and what was the nested error.
 func New(function, action string, cause error) DeepErr {
 	return DeepErr{
 		Function: function,
@@ -19,6 +24,7 @@ func New(function, action string, cause error) DeepErr {
 	}
 }
 
+// NewFull is the full error function with all params
 func NewFull(function, action string, cause error, code, message string, params []interface{}) DeepErr {
 	return DeepErr{
 		Function: function,
