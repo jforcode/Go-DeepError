@@ -19,6 +19,16 @@ func New(function, action string, cause error) DeepErr {
 	}
 }
 
+func NewFull(function, action string, cause error, code, message string, params []interface{}) DeepErr {
+	return DeepErr{
+		Function: function,
+		Action:   action,
+		Cause:    cause,
+		Code:     code,
+		Message:  message,
+	}
+}
+
 func (err DeepErr) Error() string {
 	ret := ""
 	if err.Function != "" {
