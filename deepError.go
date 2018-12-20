@@ -2,9 +2,6 @@ package deepError
 
 import "fmt"
 
-// BuildVersion is the build version of the entire project
-var BuildVersion string = "2.0"
-
 // DeepErr is the actual error struct to be used
 type DeepErr struct {
 	Function string
@@ -32,39 +29,30 @@ func NewFull(function, action string, cause error, code, message string, params 
 		Cause:    cause,
 		Code:     code,
 		Message:  message,
+		Params:   params,
 	}
 }
 
 func (err DeepErr) Error() string {
 	ret := ""
 	if err.Function != "" {
-		ret += "IN " + err.Function
-	} else {
-		ret += "IN <NO_FUNCTION>"
+		ret += "IN " + err.Function + " "
 	}
 
 	if err.Action != "" {
-		ret += " WHILE " + err.Action
-	} else {
-		ret += " WHILE <NO_ACTION>"
+		ret += "WHILE " + err.Action + " "
 	}
 
 	if err.Code != "" {
-		ret += " GOT " + err.Code
-	} else {
-		ret += " GOT <NO_CODE>"
+		ret += "GOT " + err.Code + " "
 	}
 
 	if err.Message != "" {
-		ret += " (" + err.Message + ")"
+		ret += "(" + fmt.Sprintf(err.Message, err.Params...) + ")"
 	} else {
-		ret += " (<NO_MESSAGE>)"
-	}
-
-	if err.Params != nil && len(err.Params) != 0 {
-		ret += ": " + fmt.Sprint(err.Params)
-	} else {
-		ret += ": <NO_PARAMS>"
+		if err.Params != nil && len(err.Params) != 0 {
+			ret += fmt.Sprint(err.Params)
+		}
 	}
 
 	if err.Cause != nil {

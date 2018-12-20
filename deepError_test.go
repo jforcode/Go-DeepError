@@ -1,47 +1,65 @@
 package deepError
 
 import (
-	"fmt"
+	"errors"
+	"testing"
 )
 
-func ExampleSimpleFunction() {
+func TestNew(t *testing.T) {
 	fun1 := func() error {
-		return DeepErr{
-			Function: "fun1",
-			Action:   "doing nothing",
-			Code:     "test",
-			Message:  "no message",
-			Params:   []interface{}{"param1", "param2"},
-		}
+		return New("fun1", "doing nothing", errors.New("some dummy nested error"))
 	}
 
 	err := fun1()
-	err1 := err.(DeepErr)
-	fmt.Println(err1)
+	actual := err.Error()
+	expected := "IN fun1 WHILE doing nothing \nNested Error: some dummy nested error"
 
-	// Output:
-	// IN fun1 WHILE doing nothing GOT test (no message): [param1 param2]
+	if actual != expected {
+		t.Fatalf("Expected:\n%s\nGot:\n%s", expected, actual)
+	}
 }
 
-func ExampleNestedFunction() {
+func TestNewFull(t *testing.T) {
 	fun1 := func() error {
-		return DeepErr{
-			Action: "returning error",
-		}
+		return NewFull("fun1", "doing nothing", errors.New("some dummy nested error"), "SOME_CODE", "dummy message with %s", []interface{}{"some param"})
 	}
 
-	fun2 := func() error {
-		err := fun1()
-		return DeepErr{
-			Function: "fun2",
-			Cause:    err,
-		}
+	err := fun1()
+	actual := err.Error()
+	expected := `IN fun1 WHILE doing nothing GOT SOME_CODE (dummy message with some param)
+Nested Error: some dummy nested error`
+
+	if actual != expected {
+		t.Fatalf("Expected:\n%s\nGot:\n%s", expected, actual)
+	}
+}
+
+func TestNoMessageButParams(t *testing.T) {
+	fun1 := func() error {
+		return NewFull("fun1", "doing nothing", errors.New("some dummy nested error"), "NO_INTERFACE_FOUND_ERROR", "", []interface{}{"some param"})
 	}
 
-	err := fun2()
-	fmt.Println(err)
+	err := fun1()
+	actual := err.Error()
+	expected := `IN fun1 WHILE doing nothing GOT NO_INTERFACE_FOUND_ERROR [some param]
+Nested Error: some dummy nested error`
 
-	// Output:
-	// IN fun2 WHILE <NO_ACTION> GOT <NO_CODE> (<NO_MESSAGE>): <NO_PARAMS>
-	// Nested Error: IN <NO_FUNCTION> WHILE returning error GOT <NO_CODE> (<NO_MESSAGE>): <NO_PARAMS>
+	if actual != expected {
+		t.Fatalf("Expected:\n%s\nGot:\n%s", expected, actual)
+	}
+}
+
+func TestRandomError(t *testing.T) {
+	fun1 := func() error {
+		return NewFull("", "", errors.New("some dummy nested error"), "SOME_CODE", "dummy message with %s", []interface{}{"some param"})
+	}
+
+	err := fun1()
+	actual := err.Error()
+	expected := `GOT SOME_CODE (dummy message with some param)
+Nested Error: some dummy nested error`
+
+	if actual != expected {
+		t.Fatalf("Expected:\n%s\nGot:\n%s", expected, actual)
+	}
 }
